@@ -1,0 +1,92 @@
+#criação bd ecommerce_ifood
+create database ecommerce_ifood;
+use ecommerce_ifood;
+
+#tabela cliente
+create table client(
+	id_client int auto_increment not null unique primary key,
+    f_name varchar(10) not null,
+    m_name varchar(15) not null,
+    l_name varchar(15) not null,
+    street_name varchar(50) not null,
+    num_street int not null,
+    complement varchar(10),
+    state char(2) not null,
+    zip_code char(8) not null,
+    email varchar(50) not null,
+    phone char(11) not null,   
+    document char(11) unique not null,
+    registration_date date
+    );
+
+#tabela loja parceira
+create table store(
+	id_store int auto_increment not null primary key,
+    razao_social varchar(20) not null unique,
+    nome_fantasia varchar(20) not null,
+    street_name varchar(50) not null,
+    num_street int not null,
+    complement varchar(10),
+    state char(2) not null,
+    zip_code char(8) not null,
+    email varchar(50) not null unique,
+    phone char(11) not null unique,
+    cnpj_store char(14) not null unique,
+    registration_date date,
+    opening_hour time,
+    closing_time time,
+    meal_type enum ('lanche', 'refeicao'),
+    delivery_type enum ('propria', 'parceira')
+    );
+
+#tabela produto
+create table product(
+	id_product int auto_increment not null primary key,
+    seller_store int,
+    product_name varchar(30) not null,
+    product_type enum ('comida', 'bebida', 'outros') not null,
+    product_classification enum ('fabricacao propria', 'industrializado') not null,
+    product_vegan enum ('vegano', 'não-vegano'),
+    product_diet enum ('diet', 'nao diet'),
+    product_status enum ('disponivel', 'indisponivel') not null,
+    product_categ enum ('comida brasileira', 'comida japonesa', 'comida italiana', 'hamburguer', 'pizza', 'sorvete', 'confeitaria', 'outros') not null,
+    product_registration_date date,
+	price_product float not null,
+    product_description varchar(40),
+    constraint produto unique (id_product),
+    constraint fk_loja_fornecedora foreign key (seller_store) references store(id_store)
+);
+
+#tabela pedido
+create table ordering(
+	id_order int auto_increment not null unique primary key,    
+    order_date timestamp,
+    client_order int,
+    product_order int,
+    quantity_product int default(1) not null,
+    price_order float,    
+    constraint fk_client_order foreign key (client_order) references client(id_client),
+    constraint fk_product_order foreign key (product_order) references product(id_product)
+    );
+
+#tabela entrega
+create table delivery(
+	id_delivery int auto_increment not null unique primary key,
+    id_client int,
+    delivery_status enum ('em andamento', 'entregue'),
+    delivery_tax float,
+    constraint fk_id_client foreign key (id_client) references client(id_client)
+    );
+     
+#tabela pagamento
+create table payment(
+	id_payment int auto_increment not null unique primary key,
+    payment_date timestamp,
+    client_payment int, 
+    order_payment int,
+    payment_price float,    
+    payment_type enum ('pix', 'debito', 'credito'),
+    payment_status enum ('processando', 'aprovado', 'nao-aprovado'),
+    constraint fk_client_payment foreign key (client_payment) references client(id_client),
+    constraint fk_order_payment foreign key (order_payment) references ordering(id_order)
+    );
