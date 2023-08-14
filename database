@@ -2,15 +2,16 @@
 create database ecommerce_ifood;
 use ecommerce_ifood;
 
-#tabela cliente
+#tabela 1 cliente
 create table client(
-	id_client int auto_increment not null unique primary key,
+    id_client int auto_increment not null unique primary key,
     f_name varchar(10) not null,
     m_name varchar(15) not null,
     l_name varchar(15) not null,
     street_name varchar(50) not null,
     num_street int not null,
     complement varchar(10),
+    city varchar(20) not null,
     state char(2) not null,
     zip_code char(8) not null,
     email varchar(50) not null,
@@ -19,29 +20,33 @@ create table client(
     registration_date date
     );
 
-#tabela loja parceira
+#tabela 2 loja parceira
 create table store(
-	id_store int auto_increment not null primary key,
+    id_store int auto_increment not null primary key,
     razao_social varchar(20) not null unique,
     nome_fantasia varchar(20) not null,
     street_name varchar(50) not null,
     num_street int not null,
     complement varchar(10),
+    city varchar(20) not null,
     state char(2) not null,
     zip_code char(8) not null,
     email varchar(50) not null unique,
     phone char(11) not null unique,
     cnpj_store char(14) not null unique,
+    responsible_fname varchar(10),
+    responsible_mname varchar(15),
+    responsible_lname varchar(15),
+    responsible_document char(11),
     registration_date date,
     opening_hour time,
     closing_time time,
-    meal_type enum ('lanche', 'refeicao'),
-    delivery_type enum ('propria', 'parceira')
+    meal_type enum ('lanche', 'refeicao')
     );
 
-#tabela produto
+#tabela 3 produto
 create table product(
-	id_product int auto_increment not null primary key,
+    id_product int auto_increment not null primary key,
     seller_store int,
     product_name varchar(30) not null,
     product_type enum ('comida', 'bebida', 'outros') not null,
@@ -51,15 +56,35 @@ create table product(
     product_status enum ('disponivel', 'indisponivel') not null,
     product_categ enum ('comida brasileira', 'comida japonesa', 'comida italiana', 'hamburguer', 'pizza', 'sorvete', 'confeitaria', 'outros') not null,
     product_registration_date date,
-	price_product float not null,
+    price_product float not null,
     product_description varchar(40),
     constraint produto unique (id_product),
     constraint fk_loja_fornecedora foreign key (seller_store) references store(id_store)
 );
 
-#tabela pedido
+#tabela 4 entregador
+create table deliever_man(
+    id_deliverman int auto_increment not null unique primary key,
+    f_name varchar(10) not null,
+    m_name varchar(15) not null,
+    l_name varchar(15) not null,
+    street_name varchar(50) not null,
+    num_street int not null,
+    complement varchar(10),
+    city varchar(20) not null,
+    state char(2) not null,
+    zip_code char(8) not null,
+    email varchar(50) not null,
+    phone char(11) not null,   
+    document char(11) unique not null,
+    vehicule enum ('moto', 'bicicleta', 'patinete') not null,
+    vehicule_license char(7),
+    registration_date date
+    );
+
+#tabela 5 pedido
 create table ordering(
-	id_order int auto_increment not null unique primary key,    
+    id_order int auto_increment not null unique primary key,    
     order_date timestamp,
     client_order int,
     product_order int,
@@ -69,18 +94,20 @@ create table ordering(
     constraint fk_product_order foreign key (product_order) references product(id_product)
     );
 
-#tabela entrega
+#tabela 6 entrega
 create table delivery(
-	id_delivery int auto_increment not null unique primary key,
+    id_delivery int auto_increment not null unique primary key,
     id_client int,
+    id_deliverman int,
     delivery_status enum ('em andamento', 'entregue'),
     delivery_tax float,
-    constraint fk_id_client foreign key (id_client) references client(id_client)
+    constraint fk_id_client foreign key (id_client) references client(id_client),
+    constraint fk_id_deliverman foreign key (id_deliverman) references deliever_man(id_deliverman)
     );
      
-#tabela pagamento
+#tabela 7 pagamento
 create table payment(
-	id_payment int auto_increment not null unique primary key,
+    id_payment int auto_increment not null unique primary key,
     payment_date timestamp,
     client_payment int, 
     order_payment int,
