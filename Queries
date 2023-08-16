@@ -1,0 +1,64 @@
+#Queries
+
+#1 - Perfil do Consumidor
+#1.1 Média de formas de pagamento por Cliente - que esclarecer sobre hábitos de consumo e negociação junto às operadores de cartões:
+SELECT ROUND(AVG(tipos_pgto_cliente.tipos_distintos_de_pgto),2)
+FROM (
+SELECT client_order AS cliente,
+	COUNT(DISTINCT order_payment_type) AS tipos_distintos_de_pgto
+    FROM ordering
+    GROUP BY cliente) AS tipos_pgto_cliente;
+
+#1.2 Média de pedidos por cliente (o ideal seria usar períodos de tempo para gerar dados de comparação e evolução do consumo):
+SELECT ROUND(AVG(pedidos_cliente.qtdade_pedidos),2) AS media_pedidos_cliente from
+(SELECT id_client AS consumidor, COUNT(id_order) AS qtdade_pedidos 
+FROM ordering, client
+WHERE id_client = client_order
+GROUP BY id_client) AS pedidos_cliente;
+
+
+
+#2 - Perfil das Lojas Parceiras
+#2.1 quantidade de pedido por loja (loja identificada pelo id) - lojas com maior demanda:
+SELECT id_store AS Loja_parceira, ROUND(COUNT(id_order),2) AS Pedidos_por_loja
+FROM ordering, store, product
+WHERE id_product=product_order AND seller_store=id_store
+GROUP BY Loja_parceira
+ORDER BY Pedidos_por_loja DESC;
+
+#2.1 valor de venda por loja(identificada pelo id) - lojas com maior venda (coincide com a loja de maior demanda?):
+SELECT id_store AS Loja_parceira, ROUND(SUM(id_order),2) AS Vendas_por_loja
+FROM ordering, store, product
+WHERE id_product=product_order AND seller_store=id_store
+GROUP BY Loja_parceira
+ORDER BY Pedidos_por_loja DESC;
+
+
+
+#3 - Perfil dos Produtos Ofertados
+#3.1 consumo médio por categoria de produto, em ordem decrescente - (coincide com o resultado de lojas com maior demanda?):
+SELECT product_categ AS categoria, ROUND(AVG(price_order),2) AS consumo_medio
+FROM ordering, product, store
+WHERE id_product=product_order AND seller_store=id_store
+GROUP BY categoria
+ORDER BY consumo_medio DESC; 
+
+#3.2 consumo total por categoria de produto em ordem decrescente - (coincide com o resultado de categoria com maior demanda e com os
+restaurantes de maior demanda e maior venda?):
+SELECT product_categ AS categoria, ROUND(SUM(price_order),2) AS consumo_medio
+FROM ordering, product, store
+WHERE id_product=product_order AND seller_store=id_store
+GROUP BY categoria
+ORDER BY consumo_medio DESC;
+
+
+#4 - Perfil dos Entregadores Parceiros
+#4.1 Média de Entregas por Entregador - com registros períodicos é possível acompanhar a média de entregadores com alto rendimento,
+o período médio de tempo que os entregadores permanecem como parceiros, etc:
+SELECT ROUND(AVG(entregas_entregador.qtdade_entregas),2) AS media_entregas_entregador 
+FROM(
+SELECT d.id_delieverman AS entregador, COUNT(o.id_order) AS qtdade_entregas 
+FROM ordering o JOIN deliever_man d
+ON o.id_delieverman=d.id_delieverman
+GROUP BY entregador) AS entregas_entregador;
+
